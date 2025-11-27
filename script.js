@@ -4,63 +4,129 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // --- SIMULACIÓN DEL DOMINIO DE RASA ---
-    // En un bot real, esto estaría en domain.yml
-    const botResponses = {
-        greet: "¡Hola! ¿En qué puedo ayudarte hoy?",
-        goodbye: "¡Hasta luego! Que tengas un buen día.",
-        default: "Lo siento, no entendí eso. ¿Puedes decirlo de otra manera?"
+    // --- ESTADO DE LA CONVERSACIÓN (SIMULACIÓN DE SLOTS) ---
+    let conversationState = {
+        name: null,
+        favorite_color: null,
+        current_form_step: 'idle' // idle, asking_name, asking_color, complete
     };
 
-    // --- FUNCIÓN PARA MOSTRAR MENSAJES EN EL CHAT ---
-    function displayMessage(sender, text) {
+    // --- RESPUESTAS DEL BOT ---
+    const botResponses = {
+        greet: "¡Hola! Soy un bot de demostración. Para empezar, ¿podrías decirme tu nombre?",
+        ask_name: "¿Cuál es tu nombre?",
+        ask_color: (name) => `Gracias, ${name}. Ahora, ¿cuál es tu color favorito?`,
+        form_complete: (name, color) => `¡Perfecto! He guardado tu nombre como ${name} y tu color favorito como ${color}. ¡Esa es una gran elección!`,
+        fallback: "Lo siento, no entendí. ¿Podrías repetirlo?",
+    };
+
+    // --- FUNCIÓN PARA MOSTRAR MENSAJES Y BOTONES ---
+    function displayMessage(sender, text, quickReplies = []) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
-        messageElement.textContent = text;
+        
+        const textElement = document.createElement('p');
+        textElement.textContent = text;
+        messageElement.appendChild(textElement);
+
+        if (quickReplies.length > 0) {
+            const repliesContainer = document.createElement('div');
+            repliesContainer.classList.add('quick-replies');
+            quickReplies.forEach(reply => {
+                const button = document.createElement('button');
+                button.classList.add('quick-reply-button');
+                button.textContent = reply;
+                button.addEventListener('click', () => {
+                    // Simular que el usuario hizo clic en el botón
+                    userInput.value = reply;
+                    handleUserMessage();
+                });
+                repliesContainer.appendChild(button);
+            });
+            messageElement.appendChild(repliesContainer);
+        }
+        
         messagesContainer.appendChild(messageElement);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll al final
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    // --- FUNCIÓN PRINCIPAL QUE SIMULA EL NLU Y EL DIÁLOGO ---
+    // --- FUNCIÓN PARA ACTUALIZAR EL PANEL DE DEPURACIÓN ---
+    function updateDebugPanel(intent, entities) {
+        document.getElementById('debug-intent').textContent = intent || 'N/A';
+        document.getElementById('debug-entities').textContent = entities ? JSON.stringify(entities, null, 2) : 'N/A';
+        document.getElementById('debug-slots').textContent = JSON.stringify(conversationState, null, 2);
+    }
+
+    // --- FUNCIÓN DE PARSING (SIMULACIÓN NLU) ---
+    function parseMessage(text) {
+        const lowerText = text.toLowerCase();
+        let intent = null;
+        let entities = [];
+
+        // Simulación de extracción de entidades
+        if (lowerText.includes('me llamo') || lowerText.includes('soy') || lowerText.includes('mi nombre es')) {
+            intent = 'inform_name';
+            const nameMatch = text.match(/(?:me llamo|soy|mi nombre es)\s+(\w+)/i);
+            if (nameMatch) {
+                entities.push({ type: 'name', value: nameMatch[1] });
+            }
+        } else if (lowerText.includes('hola') || lowerText.includes('buenos días')) {
+            intent = 'greet';
+        }
+        
+        return { intent, entities };
+    }
+
+    // --- LÓGICA PRINCIPAL DE CONVERSIÓN (SIMULACIÓN CORE) ---
     function handleUserMessage() {
         const userText = userInput.value.trim();
         if (userText === '') return;
 
-        // Mostrar el mensaje del usuario
         displayMessage('user', userText);
         userInput.value = '';
+        
+        // Limpiar panel de depuración al inicio
+        updateDebugPanel(null, null);
 
-        // Simular "pensamiento" del bot
         setTimeout(() => {
-            // --- SIMULACIÓN DEL NLU DE RASA ---
-            // Identificar la intención del usuario (muy simplificado)
-            let intent = 'default'; // Intención por defecto si no se reconoce nada
-            const lowerCaseText = userText.toLowerCase();
-
-            if (lowerCaseText.includes('hola') || lowerCaseText.includes('buenos días') || lowerCaseText.includes('hey')) {
-                intent = 'greet';
-            } else if (lowerCaseText.includes('adiós') || lowerCaseText.includes('hasta luego') || lowerCaseText.includes('chao')) {
-                intent = 'goodbye';
+            const { intent, entities } = parseMessage(userText);
+            
+            // Lógica del formulario
+            if (conversationState.current_form_step === 'idle' && intent === 'greet') {
+                conversationState.current_form_step = 'asking_name';
+                displayMessage('bot', botResponses.ask_name);
+            } else if (conversationState.current_form_step === 'asking_name') {
+                const nameEntity = entities.find(e => e.type === 'name');
+                if (nameEntity) {
+                    conversationState.name = nameEntity.value;
+                    conversationState.current_form_step = 'asking_color';
+                    displayMessage('bot', botResponses.ask_color(conversationState.name));
+                } else {
+                    displayMessage('bot', botResponses.ask_name);
+                }
+            } else if (conversationState.current_form_step === 'asking_color') {
+                // Aquí asumimos que cualquier texto es el color
+                conversationState.favorite_color = userText;
+                conversationState.current_form_step = 'complete';
+                displayMessage('bot', botResponses.form_complete(conversationState.name, conversationState.favorite_color));
+            } else {
+                displayMessage('bot', botResponses.fallback);
             }
+            
+            // Actualizar el panel de depuración con los resultados
+            updateDebugPanel(intent, entities);
 
-            // --- SIMULACIÓN DE LA POLÍTICA DE DIÁLOGO ---
-            // Seleccionar la respuesta del bot basada en la intención
-            const botResponse = botResponses[intent] || botResponses.default;
-
-            // Mostrar la respuesta del bot
-            displayMessage('bot', botResponse);
-        }, 500); // 500ms de retraso para simular procesamiento
+        }, 500);
     }
 
     // --- EVENT LISTENERS ---
     sendButton.addEventListener('click', handleUserMessage);
-
     userInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             handleUserMessage();
         }
     });
 
-    // Mensaje de bienvenida inicial del bot
+    // Mensaje de bienvenida inicial
     displayMessage('bot', botResponses.greet);
 });
