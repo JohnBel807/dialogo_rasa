@@ -1,3 +1,4 @@
+
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f7f9;
@@ -28,20 +29,26 @@ header h1 {
     background-color: #fff;
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     overflow-y: auto;
     max-height: 80vh;
 }
 
-.chat-container {
+.chat-wrapper {
     flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-container {
     display: flex;
     flex-direction: column;
     background-color: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     overflow: hidden;
-    height: 80vh;
+    height: 60vh;
 }
 
 .chat-header {
@@ -83,6 +90,8 @@ header h1 {
     max-width: 75%;
     word-wrap: break-word;
     line-height: 1.4;
+    display: flex;
+    flex-direction: column;
 }
 
 .message.user {
@@ -95,6 +104,27 @@ header h1 {
     background-color: #e9e9eb;
     align-self: flex-start;
     color: #303030;
+}
+
+.quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.quick-reply-button {
+    background-color: #ddd;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 5px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.quick-reply-button:hover {
+    background-color: #bbb;
 }
 
 .chat-input-area {
@@ -128,7 +158,40 @@ header h1 {
     background-color: #00796b;
 }
 
-/* Estilos para la sección de explicación */
+/* Estilos para el panel de depuración */
+.debug-panel {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+}
+
+.debug-panel h3 {
+    margin-top: 0;
+    color: #61dafb;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.debug-info {
+    margin-bottom: 10px;
+}
+
+.debug-info strong {
+    color: #a6e22e;
+}
+
+.debug-info span, .debug-info pre {
+    color: #f1fa8c;
+    display: block;
+    padding-left: 10px;
+    word-wrap: break-word;
+}
+
+/* Estilos para la sección de explicación (se mantienen iguales) */
 .component-card {
     margin-bottom: 25px;
     border: 1px solid #e0e0e0;
@@ -161,11 +224,4 @@ pre {
 
 code {
     font-family: 'Courier New', Courier, monospace;
-}
-
-.rasa-logo {
-    display: block;
-    margin: 30px auto 0;
-    max-width: 100px;
-    height: auto;
 }
