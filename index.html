@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Interactiva: Creando un Flujo Conversacional con Rasa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <h1>Creando un Flujo Conversacional con Rasa</h1>
+        <p>Una demostración interactiva de cómo los archivos de Rasa definen una conversación.</p>
+    </header>
+
+    <main class="container">
+        <section class="explanation">
+            <h2>Los Componentes Clave de Rasa</h2>
+            <p>Rasa utiliza varios archivos YAML para definir el comportamiento del bot. Los más importantes para un
+                flujo simple son:</p>
+
+            <div class="component-card">
+                <h3>1. NLU (Natural Language Understanding)</h3>
+                <div class="yaml-content">
+                    <h4>Definición:</h4>
+                    <p>El archivo <code>data/nlu.yml</code> entrena al bot para que entienda lo que dice el usuario.
+                        Aquí definimos <strong>intenciones</strong> (lo que el usuario quiere hacer) y proporcionamos
+                        ejemplos de frases para cada una.</p>
+                    <h4>Ejemplo:</h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hola
+    - buenos días
+    - hey
+    - qué tal
+
+- intent: goodbye
+  examples: |
+    - adiós
+    - hasta luego
+    - nos vemos
+    - chao</code></pre>
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h3>2. Dominio (Domain)</h3>
+                <div class="yaml-content">
+                    <h4>Definición:</h4>
+                    <p>El archivo <code>domain.yml</code> es el "universo" del bot. Define todas las intenciones que
+                        debe conocer, las respuestas (<strong>utterances</strong>) que puede dar, las entidades y las
+                        acciones que puede realizar.</p>
+                    <h4>Ejemplo:</h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+
+responses:
+  utter_greet:
+  - text: "¡Hola! ¿En qué puedo ayudarte hoy?"
+  
+  utter_goodbye:
+  - text: "¡Hasta luego! Que tengas un buen día."</code></pre>
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h3>3. Historias (Stories)</h3>
+                <div class="yaml-content">
+                    <h4>Definición:</h4>
+                    <p>El archivo <code>data/stories.yml</code> describe las conversaciones típicas. Mapea las
+                        intenciones del usuario a las acciones del bot, creando un "camino feliz" o flujo de la
+                        conversación.</p>
+                    <h4>Ejemplo:</h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+stories:
+- story: happy path
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: goodbye
+  - action: utter_goodbye</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="chat-container">
+            <div class="chat-header">
+                <h2>Simulador de Chat</h2>
+                <p>Intenta escribir "hola" o "adiós" para ver el flujo en acción.</p>
+            </div>
+            <div id="chat-window">
+                <div id="messages"></div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+                <button id="send-button">Enviar</button>
+            </div>
+        </section>
+
+    </main>
+    <footer>
+        <p>Creado como una demostración educativa de Rasa. &copy; 2024</p>
+        <a class="rasa-logo" href="rasa_mapa_mental.png" alt="Rasa mapa mental">mapa mental</a>
+    </footer>
+    <script src="script.js"></script>
+</body>
+
+</html>
