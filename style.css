@@ -1,4 +1,3 @@
-
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f7f9;
@@ -11,30 +10,97 @@ body {
 header {
     text-align: center;
     margin-bottom: 30px;
+    border-bottom: 2px solid #009688;
+    padding-bottom: 20px;
 }
 
 header h1 {
     color: #009688;
+    margin: 0;
 }
 
 .container {
     display: flex;
     gap: 30px;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
+    height: calc(100vh - 150px);
 }
 
-.explanation {
+/* --- Panel de Documentación (Izquierda) --- */
+.documentation {
     flex: 3;
     background-color: #fff;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     overflow-y: auto;
-    max-height: 80vh;
 }
 
-.chat-wrapper {
+.documentation h2 {
+    margin-top: 0;
+    color: #00695c;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+details {
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+summary {
+    font-weight: 500;
+    font-size: 1.1em;
+    padding: 15px;
+    background-color: #e0f2f1;
+    color: #00695c;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+summary::before {
+    content: '▶';
+    margin-right: 10px;
+    font-size: 0.8em;
+    transition: transform 0.3s;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.yaml-block {
+    padding: 20px;
+}
+
+.yaml-block h4 {
+    margin-top: 0;
+    color: #00796b;
+    font-family: 'Roboto Mono', monospace;
+}
+
+pre {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-size: 0.9em;
+    font-family: 'Roboto Mono', monospace;
+    line-height: 1.5;
+}
+
+/* --- Panel Interactivo (Derecha) --- */
+.interactive-panel {
     flex: 2;
     display: flex;
     flex-direction: column;
@@ -48,7 +114,7 @@ header h1 {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     overflow: hidden;
-    height: 60vh;
+    flex-grow: 1;
 }
 
 .chat-header {
@@ -61,12 +127,6 @@ header h1 {
 .chat-header h2 {
     margin: 0;
     font-size: 1.2em;
-}
-
-.chat-header p {
-    margin: 5px 0 0;
-    font-size: 0.9em;
-    opacity: 0.9;
 }
 
 #chat-window {
@@ -90,8 +150,6 @@ header h1 {
     max-width: 75%;
     word-wrap: break-word;
     line-height: 1.4;
-    display: flex;
-    flex-direction: column;
 }
 
 .message.user {
@@ -104,27 +162,6 @@ header h1 {
     background-color: #e9e9eb;
     align-self: flex-start;
     color: #303030;
-}
-
-.quick-replies {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.quick-reply-button {
-    background-color: #ddd;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 5px 12px;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.quick-reply-button:hover {
-    background-color: #bbb;
 }
 
 .chat-input-area {
@@ -158,14 +195,14 @@ header h1 {
     background-color: #00796b;
 }
 
-/* Estilos para el panel de depuración */
+/* --- Panel de Depuración --- */
 .debug-panel {
     background-color: #2d2d2d;
     color: #f8f8f2;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Roboto Mono', monospace;
     font-size: 0.9em;
 }
 
@@ -189,39 +226,4 @@ header h1 {
     display: block;
     padding-left: 10px;
     word-wrap: break-word;
-}
-
-/* Estilos para la sección de explicación (se mantienen iguales) */
-.component-card {
-    margin-bottom: 25px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.component-card h3 {
-    background-color: #e0f2f1;
-    color: #00695c;
-    margin: 0;
-    padding: 15px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.yaml-content h4 {
-    color: #00796b;
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
-
-pre {
-    background-color: #2d2d2d;
-    color: #f8f8f2;
-    padding: 15px;
-    border-radius: 5px;
-    overflow-x: auto;
-    font-size: 0.9em;
-}
-
-code {
-    font-family: 'Courier New', Courier, monospace;
 }
