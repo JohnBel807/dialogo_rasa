@@ -5,13 +5,13 @@ html, body {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f7f9;
     color: #333;
-    overflow: hidden;
-    height: 100vh;
+    /* CAMBIO: Se restaura el comportamiento de scroll por defecto */
+    overflow-x: hidden; /* Evitamos scroll horizontal, que suele ser indeseable */
 }
 
+/* Se eliminan las propiedades flex del body */
 body {
-    display: flex;
-    flex-direction: column;
+    padding: 20px; /* Añadimos un poco de padding al body para que no esté pegado a los bordes */
 }
 
 header {
@@ -19,7 +19,7 @@ header {
     text-align: center;
     padding: 20px;
     border-bottom: 2px solid #009688;
-    flex-shrink: 0;
+    margin-bottom: 30px; /* Añadimos margen para separar del contenido */
 }
 
 header h1 {
@@ -34,13 +34,11 @@ header p {
 
 /* --- CONTENEDOR PRINCIPAL (FLEXBOX) --- */
 .container {
-    flex-grow: 1;
     display: flex;
     gap: 30px;
     max-width: 1600px;
-    padding: 30px;
-    box-sizing: border-box;
-    width: 100%;
+    margin: 0 auto; /* Centramos el contenedor */
+    /* CAMBIO: Se elimina flex-grow y height. El contenedor ahora mide según su contenido. */
 }
 
 /* --- PANEL DE DOCUMENTACIÓN (IZQUIERDA) --- */
@@ -50,10 +48,10 @@ header p {
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    /* Este panel seguirá teniendo su propio scroll si el contenido es muy largo */
     overflow-y: auto;
-    /* CLAVE: Permite que este item flexible se encoja por debajo de su tamaño de contenido si es necesario,
-       lo cual es crucial para que `overflow-y: auto` funcione correctamente dentro de un contenedor flexible. */
-    min-height: 0;
+    /* Limitamos la altura máxima para que el scroll interno tenga sentido */
+    max-height: 80vh; 
 }
 
 .documentation h2 {
@@ -118,15 +116,12 @@ pre {
     line-height: 1.5;
 }
 
-/* --- PANEL INTERACTIVO (DERECHA) - CAMBIO CLAVE AQUÍ --- */
+/* --- PANEL INTERACTIVO (DERECHA) --- */
 .interactive-panel {
     flex: 2;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    /* CAMBIO IMPORTANTE: Se elimina 'height: 100%'. 
-       Permitimos que el contenedor flexible principal (.container) controle la altura,
-       y que los hijos (.chat-container y .debug-panel) la distribuyan entre ellos. */
 }
 
 .chat-container {
@@ -136,10 +131,9 @@ pre {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     overflow: hidden;
-    /* CLAVE: Hace que el contenedor del chat crezca para ocupar todo el espacio vertical disponible. */
-    flex-grow: 1;
-    /* CLAVE: Igual que en la documentación, ayuda a que el scroll interno funcione bien. */
-    min-height: 0;
+    /* CAMBIO: Se eliminan flex-grow y min-height. El contenedor ahora se ajusta a su contenido. */
+    /* Limitamos la altura máxima para que el scroll interno del chat funcione */
+    max-height: 500px; 
 }
 
 .chat-header {
@@ -147,7 +141,6 @@ pre {
     color: white;
     padding: 15px;
     text-align: center;
-    flex-shrink: 0; /* El encabezado no debe encogerse */
 }
 
 .chat-header h2 {
@@ -156,9 +149,9 @@ pre {
 }
 
 #chat-window {
-    flex-grow: 1;
+    flex-grow: 1; /* El área de mensajes sigue creciendo para llenar el espacio */
     padding: 20px;
-    overflow-y: auto;
+    overflow-y: auto; /* El scroll se activará aquí si los mensajes exceden la altura */
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -194,7 +187,6 @@ pre {
     display: flex;
     padding: 15px;
     border-top: 1px solid #ddd;
-    flex-shrink: 0; /* El área de entrada no debe encogerse */
 }
 
 #user-input {
@@ -231,8 +223,6 @@ pre {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     font-family: 'Roboto Mono', monospace;
     font-size: 0.9em;
-    /* El panel de depuración mantendrá su tamaño y no crecerá */
-    flex-shrink: 0;
 }
 
 .debug-panel h3 {
