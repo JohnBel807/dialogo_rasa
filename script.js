@@ -1,51 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const chatWindow = document.getElementById('chat-window');
+    // --- ELEMENTOS DEL DOM ---
     const messagesContainer = document.getElementById('messages');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
+    const chatWindow = document.getElementById('chat-window');
 
     // --- ESTADO DE LA CONVERSACIÓN (SIMULACIÓN DE SLOTS) ---
-    let conversationState = {
+    let slots = {
         name: null,
-        favorite_color: null,
-        current_form_step: 'idle' // idle, asking_name, asking_color, complete
+        color: null,
     };
 
-    // --- RESPUESTAS DEL BOT ---
-    const botResponses = {
-        greet: "¡Hola! Soy un bot de demostración. Para empezar, ¿podrías decirme tu nombre?",
-        ask_name: "¿Cuál es tu nombre?",
-        ask_color: (name) => `Gracias, ${name}. Ahora, ¿cuál es tu color favorito?`,
-        form_complete: (name, color) => `¡Perfecto! He guardado tu nombre como ${name} y tu color favorito como ${color}. ¡Esa es una gran elección!`,
-        fallback: "Lo siento, no entendí. ¿Podrías repetirlo?",
+    // --- ESTADO DEL FLUJO DE CONVERSIÓN ---
+    let conversationPath = 'idle'; // idle, story_profile_form
+
+    // --- RESPUESTAS DEL BOT (DEFINIDAS EN DOMAIN.YML) ---
+    const responses = {
+        utter_greet: "¡Hola! Soy un bot de demo. ¿Cómo te llamas?",
+        utter_ask_name: "¿Cuál es tu nombre?",
+        utter_ask_color: "¿Y cuál es tu color favorito?",
+        utter_slots_values: (name, color) => `¡Perfecto! He guardado que te llamas ${name} y tu color favorito es ${color}.`,
+        utter_goodbye: "¡Hasta luego!",
+        utter_noworries: "No te preocupes.",
+        utter_default: "Lo siento, no entendí eso. ¿Puedes decirlo de otra forma?"
     };
 
-    // --- FUNCIÓN PARA MOSTRAR MENSAJES Y BOTONES ---
-    function displayMessage(sender, text, quickReplies = []) {
+    // --- FUNCIÓN PARA MOSTRAR MENSAJES EN EL CHAT ---
+    function displayMessage(sender, text) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
-        
-        const textElement = document.createElement('p');
-        textElement.textContent = text;
-        messageElement.appendChild(textElement);
-
-        if (quickReplies.length > 0) {
-            const repliesContainer = document.createElement('div');
-            repliesContainer.classList.add('quick-replies');
-            quickReplies.forEach(reply => {
-                const button = document.createElement('button');
-                button.classList.add('quick-reply-button');
-                button.textContent = reply;
-                button.addEventListener('click', () => {
-                    // Simular que el usuario hizo clic en el botón
-                    userInput.value = reply;
-                    handleUserMessage();
-                });
-                repliesContainer.appendChild(button);
-            });
-            messageElement.appendChild(repliesContainer);
-        }
-        
+        messageElement.textContent = text;
         messagesContainer.appendChild(messageElement);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
@@ -53,67 +37,87 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNCIÓN PARA ACTUALIZAR EL PANEL DE DEPURACIÓN ---
     function updateDebugPanel(intent, entities) {
         document.getElementById('debug-intent').textContent = intent || 'N/A';
-        document.getElementById('debug-entities').textContent = entities ? JSON.stringify(entities, null, 2) : 'N/A';
-        document.getElementById('debug-slots').textContent = JSON.stringify(conversationState, null, 2);
+        document.getElementById('debug-entities').textContent = entities ? JSON.stringify(entities) : 'N/A';
+        document.getElementById('debug-slots').textContent = JSON.stringify(slots, null, 2);
+        document.getElementById('debug-path').textContent = conversationPath;
     }
 
     // --- FUNCIÓN DE PARSING (SIMULACIÓN NLU) ---
     function parseMessage(text) {
         const lowerText = text.toLowerCase();
-        let intent = null;
+        let intent = 'nlu_fallback';
         let entities = [];
 
-        // Simulación de extracción de entidades
-        if (lowerText.includes('me llamo') || lowerText.includes('soy') || lowerText.includes('mi nombre es')) {
-            intent = 'inform_name';
-            const nameMatch = text.match(/(?:me llamo|soy|mi nombre es)\s+(\w+)/i);
-            if (nameMatch) {
-                entities.push({ type: 'name', value: nameMatch[1] });
-            }
-        } else if (lowerText.includes('hola') || lowerText.includes('buenos días')) {
+        // Lógica de detección de intenciones y entidades
+        if (lowerText.includes('hola') || lowerText.includes('buenos días')) {
             intent = 'greet';
+        } else if (lowerText.includes('adiós') || lowerText.includes('hasta luego')) {
+            intent = 'goodbye';
+        } else if (lowerText.includes('sí') || lowerText.includes('correcto')) {
+            intent = 'affirm';
+        } else if (lowerText.includes('no') || lowerText.includes('incorrecto')) {
+            intent = 'deny';
+        } else {
+            const nameMatch = text.match(/(?:me llamo|soy|mi nombre es)\s+([A-Za-z]+)/i);
+            if (nameMatch) {
+                intent = 'inform_name';
+                entities.push({ type: 'name', value: nameMatch[1] });
+            } else {
+                const colorMatch = text.match(/(?:color favorito es|me gusta el)\s+([A-Za-z]+)/i);
+                if (colorMatch) {
+                    intent = 'inform_color';
+                    entities.push({ type: 'color', value: colorMatch[1] });
+                } else if (conversationPath === 'story_profile_form' && slots.name && !slots.color) {
+                    // Si estamos esperando el color, asumimos que lo que se escribió es el color
+                    intent = 'inform_color';
+                    entities.push({ type: 'color', value: text.trim() });
+                }
+            }
         }
-        
         return { intent, entities };
     }
-
-    // --- LÓGICA PRINCIPAL DE CONVERSIÓN (SIMULACIÓN CORE) ---
+    
+    // --- LÓGICA PRINCIPAL DEL BOT (SIMULACIÓN CORE) ---
     function handleUserMessage() {
         const userText = userInput.value.trim();
         if (userText === '') return;
 
         displayMessage('user', userText);
         userInput.value = '';
-        
-        // Limpiar panel de depuración al inicio
-        updateDebugPanel(null, null);
+        updateDebugPanel(null, null); // Limpiar panel
 
         setTimeout(() => {
             const { intent, entities } = parseMessage(userText);
+            let botResponse = responses.utter_default;
             
-            // Lógica del formulario
-            if (conversationState.current_form_step === 'idle' && intent === 'greet') {
-                conversationState.current_form_step = 'asking_name';
-                displayMessage('bot', botResponses.ask_name);
-            } else if (conversationState.current_form_step === 'asking_name') {
-                const nameEntity = entities.find(e => e.type === 'name');
-                if (nameEntity) {
-                    conversationState.name = nameEntity.value;
-                    conversationState.current_form_step = 'asking_color';
-                    displayMessage('bot', botResponses.ask_color(conversationState.name));
-                } else {
-                    displayMessage('bot', botResponses.ask_name);
+            // LÓGICA DE REGLAS (RULES) - Prioridad alta
+            if (intent === 'goodbye') {
+                botResponse = responses.utter_goodbye;
+                conversationPath = 'idle';
+                slots = { name: null, color: null }; // Resetear estado
+            } else if (intent === 'affirm') {
+                botResponse = responses.utter_noworries;
+            } 
+            // LÓGICA DE HISTORIAS (STORIES)
+            else if (intent === 'greet') {
+                botResponse = responses.utter_greet;
+                conversationPath = 'story_profile_form';
+            } else if (conversationPath === 'story_profile_form') {
+                if (intent === 'inform_name' && entities.length > 0) {
+                    slots.name = entities.find(e => e.type === 'name').value;
+                    botResponse = responses.utter_ask_color;
+                } else if (intent === 'inform_color' && entities.length > 0) {
+                    slots.color = entities.find(e => e.type === 'color').value;
+                    botResponse = responses.utter_slots_values(slots.name, slots.color);
+                    conversationPath = 'idle'; // Fin de la historia
+                } else if (!slots.name) {
+                    botResponse = responses.utter_ask_name;
+                } else if (!slots.color) {
+                    botResponse = responses.utter_ask_color;
                 }
-            } else if (conversationState.current_form_step === 'asking_color') {
-                // Aquí asumimos que cualquier texto es el color
-                conversationState.favorite_color = userText;
-                conversationState.current_form_step = 'complete';
-                displayMessage('bot', botResponses.form_complete(conversationState.name, conversationState.favorite_color));
-            } else {
-                displayMessage('bot', botResponses.fallback);
             }
             
-            // Actualizar el panel de depuración con los resultados
+            displayMessage('bot', botResponse);
             updateDebugPanel(intent, entities);
 
         }, 500);
@@ -128,5 +132,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Mensaje de bienvenida inicial
-    displayMessage('bot', botResponses.greet);
+    displayMessage('bot', "¡Hola! Escribe 'hola' para empezar a crear tu perfil.");
 });
