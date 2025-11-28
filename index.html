@@ -1,113 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Avanzada: Flujos Complejos con Rasa</title>
+    <title>Guía Completa de Rasa: De la Teoría a la Práctica</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
     <header>
-        <h1>Demo Avanzada: Flujos Complejos con Rasa</h1>
-        <p>Explorando entidades, slots y formularios para crear conversaciones más inteligentes.</p>
+        <h1>Guía Completa de Rasa</h1>
+        <p>Explora cada componente del framework y vélos en acción en un chatbot interactivo.</p>
     </header>
 
     <main class="container">
-        <section class="explanation">
-            <h2>Conceptos Avanzados de Rasa</h2>
-            <p>Para crear bots más útiles, necesitamos ir más allá de las simples intenciones.</p>
+        <!-- PANEL IZQUIERDO: DOCUMENTACIÓN -->
+        <section class="documentation">
+            <h2>Componentes de un Bot Rasa</h2>
+            
+            <details open>
+                <summary>1. NLU (Natural Language Understanding)</summary>
+                <p>Define cómo el bot entiende los mensajes del usuario. Se enfoca en <strong>intenciones</strong> (qué quiere el usuario) y <strong>entidades</strong> (datos clave del mensaje).</p>
+                <div class="yaml-block">
+                    <h4><code>data/nlu.yml</code></h4>
+                    <pre><code class="language-yaml">version: "3.1"
 
-            <div class="component-card">
-                <h3>1. Entidades (Entities)</h3>
-                <div class="yaml-content">
-                    <h4>Definición:</h4>
-                    <p>Son piezas de información estructurada que se extraen del mensaje del usuario. Por ejemplo, en
-                        "Me llamo Juan", la entidad es "Juan" y su tipo es "nombre". Se definen en
-                        <code>data/nlu.yml</code>.
-                    </p>
-                    <h4>Ejemplo:</h4>
-                    <pre><code class="language-yaml">nlu:
+nlu:
+- intent: greet
+  examples: |
+    - hola
+    - buenos días
+    - hey
+
+- intent: goodbye
+  examples: |
+    - adiós
+    - hasta luego
+    - nos vemos
+
+- intent: affirm
+  examples: |
+    - sí
+    - correcto
+    - por supuesto
+
+- intent: deny
+  examples: |
+    - no
+    - incorrecto
+    - para nada
+
 - intent: inform_name
   examples: |
     - Me llamo [Ana](name)
     - Soy [Carlos](name)
-    - Mi nombre es [Maria](name)</code></pre>
-                </div>
-            </div>
+    - Mi nombre es [Maria](name)
 
-            <div class="component-card">
-                <h3>2. Dominio (Domain) con Slots</h3>
-                <div class="yaml-content">
-                    <h4>Definición:</h4>
-                    <p>Los <strong>slots</strong> son la memoria a corto plazo del bot. Se usan para almacenar el valor
-                        de las entidades. En <code>domain.yml</code>, se definen los slots y las respuestas que pueden
-                        usarlos.</p>
-                    <h4>Ejemplo:</h4>
-                    <pre><code class="language-yaml">intents:
-  - inform_name
+- intent: inform_color
+  examples: |
+    - Mi color favorito es el [azul](color)
+    - Me gusta el [verde](color)
+    - [Rojo](color)</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary>2. Dominio (Domain)</summary>
+                <p>El "universo" del bot. Define todo lo que el bot conoce: intenciones, entidades, respuestas (<strong>utterances</strong>), y su memoria a corto plazo (<strong>slots</strong>).</p>
+                <div class="yaml-block">
+                    <h4><code>domain.yml</code></h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+intents:
   - greet
+  - goodbye
+  - affirm
+  - deny
+  - inform_name
+  - inform_color
 
 entities:
   - name
+  - color
 
 slots:
   name:
     type: text
     influence_conversation: true
+  color:
+    type: text
+    influence_conversation: true
 
 responses:
   utter_greet:
-  - text: "¡Hola! ¿Cómo te llamas?"
+  - text: "¡Hola! Soy un bot de demo. ¿Cómo te llamas?"
   
   utter_ask_name:
   - text: "¿Cuál es tu nombre?"
 
-  utter_greet_with_name:
-  - text: "¡Hola, {name}! Encantado de conocerte."</code></pre>
-                </div>
-            </div>
+  utter_ask_color:
+  - text: "¿Y cuál es tu color favorito?"
 
-            <div class="component-card">
-                <h3>3. Formularios (Forms)</h3>
-                <div class="yaml-content">
-                    <h4>Definición:</h4>
-                    <p>Los formularios son una forma potente de manejar flujos de conversación para recopilar múltiples
-                        piezas de información (slots). El bot hará las preguntas necesarias hasta que todos los slots
-                        requeridos estén llenos.</p>
-                    <h4>Ejemplo:</h4>
-                    <pre><code class="language-yaml">forms:
-  user_profile_form:
-    required_slots:
-      - name
-      - favorite_color</code></pre>
+  utter_slots_values:
+  - text: "¡Perfecto! He guardado que te llamas {name} y tu color favorito es {color}."
+
+  utter_goodbye:
+  - text: "¡Hasta luego!"
+
+  utter_noworries:
+  - text: "No te preocupes."</code></pre>
                 </div>
-            </div>
+            </details>
+
+            <details>
+                <summary>3. Reglas (Rules)</summary>
+                <p>Para conversaciones simples y predecibles. Mapean directamente una intención a una acción (respuesta). Son ideales para saludos, despedidas o preguntas frecuentes.</p>
+                <div class="yaml-block">
+                    <h4><code>data/rules.yml</code></h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+rules:
+- rule: Say goodbye anytime the user says goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- rule: Say affirm anytime the user affirms
+  steps:
+  - intent: affirm
+  - action: utter_noworries</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary>4. Historias (Stories)</summary>
+                <p>Para flujos de conversación complejos y con múltiples turnos. Describen una conversación típica como una secuencia de <strong>pasos (steps)</strong> que conectan intenciones del usuario con acciones del bot.</p>
+                <div class="yaml-block">
+                    <h4><code>data/stories.yml</code></h4>
+                    <pre><code class="language-yaml">version: "3.1"
+
+stories:
+- story: happy path profile form
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: inform_name
+    entities:
+    - name: "Ana"
+  - slot_was_set:
+      - name: "Ana"
+  - action: utter_ask_color
+  - intent: inform_color
+    entities:
+    - color: "azul"
+  - slot_was_set:
+      - color: "azul"
+  - action: utter_slots_values
+  - intent: goodbye
+  - action: utter_goodbye</code></pre>
+                </div>
+            </details>
+
         </section>
 
-        <section class="chat-wrapper">
+        <!-- PANEL DERECHO: CHAT Y DEPURACIÓN -->
+        <section class="interactive-panel">
             <div class="chat-container">
                 <div class="chat-header">
-                    <h2>Simulador de Chat</h2>
-                    <p>Intenta iniciar una conversación y sigue las preguntas del bot.</p>
+                    <h2>💬 Laboratorio Interactivo</h2>
                 </div>
                 <div id="chat-window">
                     <div id="messages"></div>
                 </div>
                 <div class="chat-input-area">
-                    <input type="text" id="user-input" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+                    <input type="text" id="user-input" placeholder="Escribe tu mensaje..." autocomplete="off">
                     <button id="send-button">Enviar</button>
                 </div>
             </div>
             <div class="debug-panel">
-                <h3>Cerebro de Rasa (Simulado)</h3>
+                <h3>🧠 Cerebro de Rasa (Simulado)</h3>
                 <div class="debug-info">
-                    <strong>Última Intención Detectada:</strong>
+                    <strong>Última Intención:</strong>
                     <span id="debug-intent">N/A</span>
                 </div>
                 <div class="debug-info">
@@ -118,11 +194,14 @@ responses:
                     <strong>Memoria (Slots):</strong>
                     <pre id="debug-slots">{}</pre>
                 </div>
+                 <div class="debug-info">
+                    <strong>Ruta Actual:</strong>
+                    <span id="debug-path">Esperando...</span>
+                </div>
             </div>
         </section>
     </main>
-    <a href="rasa_mapa_mental.html">Ver Mapa Mental de Rasa</a>
+
     <script src="script.js"></script>
 </body>
-
 </html>
